@@ -146,7 +146,7 @@ function hideLogin(){document.getElementById("login-gate").hidden=true;}
     if(!phone)return;
     loginMsg("Checking your phone number...");
     try{
-      const r=await withTimeout(window.sbClient.from("customers").select("id,name,phone,email,age,occupation").eq("phone",phone).maybeSingle(),"Customer lookup");
+      const r=await withTimeout(window.sbClient.rpc("find_customer_by_phone", { p_phone: phone }), "Customer lookup");
       if(r.error)throw r.error;
       if(r.data){
         setCustomerSession(r.data);
@@ -172,9 +172,13 @@ function hideLogin(){document.getElementById("login-gate").hidden=true;}
     const occupation=document.getElementById("login-occupation").value;
     if(!name||!age||!email||!occupation){loginMsg("Please complete all fields.","error");return;}
     try{
-      const r=await withTimeout(window.sbClient.from("customers").insert({name,phone,age,email,occupation}).select("id,name,phone,email,age,occupation").single(),"Customer creation");
-      if(r.error)throw r.error;
-      setCustomerSession(r.data);
+      const insertResult=await withTimeout(window.sbClient.from("customers").insert({name,phone,age,email,occupation}),"Customer creation");
+      if(insertResult.error)throw insertResult.error;
+      const lookup=await withTimeout(window.sbClient.rpc("find_customer_by_phone", { p_phone: phone }), "Customer lookup");
+      if(lookup.error)throw lookup.error;
+      const customer=Array.isArray(lookup.data) ? lookup.data[0] : lookup.data;
+      if(!customer)throw new Error("Profile created, but could not load it.");
+      setCustomerSession(customer);
       document.getElementById("session-user").textContent=`Logged in as ${r.data.name}`;
       hideLogin();
     }catch(err){loginMsg(err.message||"Could not create your profile.","error");}
