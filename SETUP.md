@@ -13,8 +13,13 @@
 8. Deploy the folder to GitHub Pages.
 9. Add your own services, hours and branding from `admin.html`.
 
-Important MVP note:
-The supplied prompt specifies phone-number booking but does not define an OTP/authentication flow. This implementation therefore uses the `customers` table for customer identification and uses Supabase Auth only for the admin gate. Before production use, add a real phone OTP/auth flow and tighten customer/booking RLS so users cannot enumerate other customers or bookings.
+Customer flow:
+- Form 1 asks for phone number only.
+- If the phone already exists in `customers`, the returning customer skips the profile form and can book immediately.
+- If the phone is new, Form 2 asks for name, email and occupation (`student`, `job`, or `business`).
+- The new customer profile is saved once, so future visits need only the phone number.
+
+No OTP is used, per the MVP requirement.
 
 Site customization:
 Every public page calls `loadSiteSettings()` on startup. That calls `applySiteSettings()`, which applies the brand, logo, colors, font, text, layout, favicon, custom CSS and custom HTML at runtime.
