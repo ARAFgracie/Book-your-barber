@@ -1,0 +1,97 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Admin</title><style>
+:root{--primary:#8b5e5a;--secondary:#f8eee9;--bg:#fffaf8;--text:#2c2524;--muted:#786e6a;--line:#eaded9}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;min-height:100vh;padding-bottom:82px}
+a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit}button{cursor:pointer}
+.container{width:min(1100px,calc(100% - 28px));margin:auto}.top{padding:18px 0}.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px}.brand img{width:38px;height:38px;object-fit:cover;border-radius:12px}.hero{margin:10px 0 24px;padding:30px 22px;border-radius:28px;background:linear-gradient(135deg,var(--secondary),#fff);box-shadow:0 12px 35px #5d40370f}.hero h1{font-size:clamp(30px,8vw,56px);line-height:1.02;margin:8px 0 12px}.hero p{color:var(--muted);max-width:650px}.glass{border:1px solid #ffffffaa;background:#ffffffaa;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 10px 30px #0000000d}.btn{border:0;border-radius:16px;padding:13px 18px;font-weight:600;transition:.2s}.btn-primary{background:var(--primary);color:#fff}.btn-light{background:#fff;color:var(--text);border:1px solid var(--line)}.btn:disabled{opacity:.5;cursor:not-allowed}.section-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:24px 0 12px}.section-head h2{font-size:21px;margin:0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:0 8px 24px #5d40370a}.service-card h3{margin:0 0 7px;font-size:16px}.muted{color:var(--muted);font-size:14px}.price{font-weight:700;margin:12px 0}.service-card .row{display:flex;justify-content:space-between;align-items:end;gap:8px}.list-view{grid-template-columns:1fr!important}.empty{text-align:center;padding:35px 15px;color:var(--muted)}.msg{padding:12px 14px;border-radius:14px;margin:12px 0;background:#fff1ee}.msg.error{color:#a52c24}.msg.ok{background:#eef9f1;color:#26703a}.form{display:grid;gap:13px}.field{display:grid;gap:7px}.field label{font-weight:600;font-size:14px}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:14px;padding:12px 13px;background:#fff;outline:none}.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 15%,transparent)}.dates{display:flex;gap:8px;overflow:auto;padding:3px 1px 10px}.date-btn{min-width:72px;border:1px solid var(--line);background:#fff;border-radius:16px;padding:10px 7px;text-align:center}.date-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.slot{border:1px solid var(--line);background:#fff;border-radius:12px;padding:11px 5px}.slot.active{background:var(--primary);color:#fff;border-color:var(--primary)}.slot.busy{background:#eee;color:#aaa;text-decoration:line-through;cursor:not-allowed}.summary{display:grid;gap:8px}.summary-row{display:flex;justify-content:space-between;gap:15px}.booking-item{display:grid;gap:8px}.status{display:inline-flex;padding:5px 9px;border-radius:99px;font-size:12px;background:#eee;justify-self:start}.status.confirmed{background:#e9f6ec;color:#24733b}.status.cancelled{background:#fcebea;color:#a32925}.status.completed{background:#eee9fb;color:#5d43a4}.bottom-nav{position:fixed;z-index:20;left:0;right:0;bottom:0;padding:9px max(10px,env(safe-area-inset-right)) max(9px,env(safe-area-inset-bottom));background:#ffffffdd;backdrop-filter:blur(18px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr)}.bottom-nav a{text-align:center;font-size:12px;color:var(--muted);padding:5px}.bottom-nav a.active{color:var(--primary);font-weight:700}.admin-layout{display:grid;gap:14px}.admin-tabs{display:flex;gap:7px;overflow:auto}.admin-tabs button{white-space:nowrap}.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse;background:#fff}.table th,.table td{padding:10px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;white-space:nowrap}.danger{background:#b33b35!important;color:#fff}.preview{width:100%;height:500px;border:1px solid var(--line);border-radius:16px;background:#fff}.two{display:grid;gap:10px}@media(min-width:700px){body{padding-bottom:20px}.bottom-nav{position:static;width:min(700px,calc(100% - 28px));margin:30px auto 0;border:1px solid var(--line);border-radius:20px}.grid{grid-template-columns:repeat(3,1fr)}.slots{grid-template-columns:repeat(5,1fr)}.two{grid-template-columns:1fr 1fr}.admin-layout{grid-template-columns:220px 1fr}.admin-tabs{display:grid;align-content:start}.admin-tabs button{text-align:left}}
+</style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "YOUR_SUPABASE_URL";
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const TIMEOUT_MS = 8000;
+
+async function withTimeout(promise, label="Request") {
+  let timer;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise((_, reject) => timer = setTimeout(() => reject(new Error(label + " timed out")), TIMEOUT_MS))
+    ]);
+  } finally { clearTimeout(timer); }
+}
+async function getUser() {
+  const { data, error } = await withTimeout(sb.auth.getUser(), "Session validation");
+  if (error) throw error;
+  return data.user;
+}
+async function loadSiteSettings() {
+  const { data, error } = await withTimeout(
+    sb.from("site_settings").select("*").limit(1).single(),
+    "Site settings"
+  );
+  if (error) throw error;
+  applySiteSettings(data);
+  return data;
+}
+function applySiteSettings(s) {
+  document.documentElement.style.setProperty("--primary", s.primary_color || "#8b5e5a");
+  document.documentElement.style.setProperty("--secondary", s.secondary_color || "#f8eee9");
+  const font = s.font_choice || "Inter";
+  const old = document.getElementById("site-font");
+  if (old) old.remove();
+  const link = document.createElement("link");
+  link.id = "site-font"; link.rel = "stylesheet";
+  link.href = "https://fonts.googleapis.com/css2?family=" + encodeURIComponent(font).replace(/%20/g, "+") + ":wght@400;500;600;700&display=swap";
+  document.head.appendChild(link);
+  document.body.style.fontFamily = "'" + font + "', system-ui, sans-serif";
+  document.querySelectorAll("[data-brand]").forEach(e => e.textContent = s.brand_name || "My Salon");
+  document.querySelectorAll("[data-slogan]").forEach(e => e.textContent = s.slogan || "");
+  document.querySelectorAll("[data-hero-heading]").forEach(e => e.textContent = s.hero_heading || "Book Your Appointment");
+  document.querySelectorAll("[data-hero-subtext]").forEach(e => e.textContent = s.hero_subtext || "");
+  document.querySelectorAll("[data-book-label]").forEach(e => e.textContent = s.book_button_label || "Book Now");
+  document.querySelectorAll("[data-cart-title]").forEach(e => e.textContent = s.booking_cart_title || "Your Booking");
+  document.querySelectorAll("[data-confirm-label]").forEach(e => e.textContent = s.confirm_button_label || "Confirm & Book");
+  document.querySelectorAll("[data-layout]").forEach(e => e.classList.toggle("list-view", s.service_layout === "list"));
+  if (s.logo_url) document.querySelectorAll("[data-logo]").forEach(e => { e.src = s.logo_url; e.hidden = false; });
+  if (s.favicon_url) {
+    let f = document.querySelector('link[rel="icon"]') || document.createElement("link");
+    f.rel = "icon"; f.href = s.favicon_url; document.head.appendChild(f);
+  }
+  if (s.custom_css) {
+    let st = document.getElementById("custom-site-css");
+    if (!st) { st = document.createElement("style"); st.id = "custom-site-css"; document.head.appendChild(st); }
+    st.textContent = s.custom_css;
+  }
+  if (s.custom_html) {
+    const holder = document.getElementById("custom-site-html");
+    if (holder) holder.innerHTML = s.custom_html;
+  }
+}
+function esc(v) {
+  return String(v ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+}
+function money(v) { return "৳" + Number(v).toLocaleString("en-BD"); }
+function setMsg(text, type="") {
+  const el = document.getElementById("msg");
+  if (el) { el.textContent = text; el.className = "msg " + type; el.hidden = !text; }
+}
+function saveBookingDraft(v) { sessionStorage.setItem("salon_booking_draft", JSON.stringify(v)); }
+function getBookingDraft() { try { return JSON.parse(sessionStorage.getItem("salon_booking_draft") || "null"); } catch { return null; } }
+function clearBookingDraft() { sessionStorage.removeItem("salon_booking_draft"); }
+function go(path) { location.href = path; }
+</script></head><body><main class="container"><header class="top"><a class="brand" href="index.html"><img data-logo hidden alt=""><span data-brand>My Salon</span></a><p class="muted">Private admin area</p></header><section id="gate" class="card form"><div class="field"><label>Admin passcode</label><input id="pass" type="password"></div><button id="enter" class="btn btn-primary">Enter Admin</button></section><section id="panel" hidden><div class="admin-layout"><div class="admin-tabs"><button class="btn btn-light tab" data-tab="dashboard">Dashboard</button><button class="btn btn-light tab" data-tab="services">Services</button><button class="btn btn-light tab" data-tab="schedule">Schedule</button><button class="btn btn-light tab" data-tab="bookings">All Bookings</button><button class="btn btn-light tab" data-tab="settings">Site Settings</button></div><div id="content"></div></div></section><div id="msg" class="msg" hidden></div></main><nav class="bottom-nav">
+<a href="index.html">⌂<br>Home</a>
+<a href="services.html">✦<br>Services</a>
+<a href="my-bookings.html">▣<br>My Bookings</a>
+<a href="customer-info.html">◉<br>Profile</a>
+</nav><div id="custom-site-html"></div><script>
+(async()=>{try{await loadSiteSettings();}catch(e){console.warn(e);} let adminUser=null,settings=null;
+document.getElementById("enter").onclick=async()=>{try{const user=await getUser();if(!user)throw new Error("Please sign in with an authenticated admin account.");const r=await withTimeout(sb.from("admins").select("is_admin").eq("user_id",user.id).eq("is_admin",true).maybeSingle(),"Admin check");if(r.error)throw r.error;if(!r.data)throw new Error("Not authorized.");const code=document.getElementById("pass").value;if(code!=="CHANGE_ME_ADMIN_PASSCODE")throw new Error("Invalid passcode.");adminUser=user;document.getElementById("gate").hidden=true;document.getElementById("panel").hidden=false;showTab("dashboard")}catch(e){setMsg(e.message,"error")}};
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+async function showTab(tab){const c=document.getElementById("content");if(tab==="dashboard")return dashboard(c);if(tab==="services")return services(c);if(tab==="schedule")return schedule(c);if(tab==="bookings")return bookings(c);if(tab==="settings")return siteSettings(c)}
+async function dashboard(c){const today=new Date().toISOString().slice(0,10);const r=await withTimeout(sb.from("bookings").select("id,booking_time,status,customers(name,phone),services(name)").eq("booking_date",today).order("booking_time"),"Dashboard");if(r.error){setMsg(r.error.message,"error");return}c.innerHTML=`<section class="card"><h2>Today</h2><div class="table-wrap"><table class="table"><tr><th>Time</th><th>Customer</th><th>Service</th><th>Status</th></tr>${r.data.map(x=>`<tr><td>${String(x.booking_time).slice(0,5)}</td><td>${esc(x.customers?.name)}<br>${esc(x.customers?.phone)}</td><td>${esc(x.services?.name)}</td><td>${esc(x.status)}</td></tr>`).join("")}</table></div></section>`}
+async function services(c){const r=await withTimeout(sb.from("services").select("*").order("created_at"),"Services");if(r.error){setMsg(r.error.message,"error");return}c.innerHTML=`<section class="card"><h2>Services</h2><form id="svc" class="form"><input type="hidden" id="sid"><div class="field"><label>Name</label><input id="sn" required></div><div class="two"><div class="field"><label>Price</label><input id="sp" type="number" min="0" required></div><div class="field"><label>Duration (min)</label><input id="sd" type="number" min="5" required></div></div><button class="btn btn-primary">Save Service</button></form><div style="margin-top:15px">${r.data.map(s=>`<div class="card" style="margin-bottom:8px"><b>${esc(s.name)}</b> · ${money(s.price)} · ${s.duration_minutes} min · ${s.is_active?"active":"inactive"} <button class="btn btn-light edit" data-id="${s.id}">Edit</button> <button class="btn danger del" data-id="${s.id}">Delete</button></div>`).join("")}</div></section>`;document.querySelectorAll(".edit").forEach(x=>x.onclick=()=>{let s=r.data.find(y=>y.id===x.dataset.id);sid.value=s.id;sn.value=s.name;sp.value=s.price;sd.value=s.duration_minutes});document.querySelectorAll(".del").forEach(x=>x.onclick=async()=>{if(confirm("Delete/deactivate this service?")){let q=await withTimeout(sb.from("services").update({is_active:false}).eq("id",x.dataset.id),"Service update");if(q.error)setMsg(q.error.message,"error");else services(c)}});document.getElementById("svc").onsubmit=async e=>{e.preventDefault();let obj={name:sn.value.trim(),price:Number(sp.value),duration_minutes:Number(sd.value),is_active:true};let q=sid.value?sb.from("services").update(obj).eq("id",sid.value):sb.from("services").insert(obj);let z=await withTimeout(q,"Service save");if(z.error)setMsg(z.error.message,"error");else services(c)}}
+async function schedule(c){const r=await withTimeout(sb.from("business_hours").select("*").order("day_of_week"),"Schedule");if(r.error){setMsg(r.error.message,"error");return}const days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];c.innerHTML=`<section class="card"><h2>Weekly schedule</h2>${r.data.map(x=>`<div class="card" style="margin:8px 0"><b>${days[x.day_of_week]}</b><div class="two"><input class="ot" data-id="${x.id}" type="time" value="${String(x.open_time||"").slice(0,5)}"><input class="ct" data-id="${x.id}" type="time" value="${String(x.close_time||"").slice(0,5)}"></div><label><input class="closed" data-id="${x.id}" type="checkbox" ${x.is_closed?"checked":""}> Closed</label></div>`).join("")}<button id="save-schedule" class="btn btn-primary">Save Schedule</button></section>`;document.getElementById("save-schedule").onclick=async()=>{for(const x of r.data){let o=document.querySelector(`.ot[data-id="${x.id}"]`).value,c1=document.querySelector(`.ct[data-id="${x.id}"]`).value,cl=document.querySelector(`.closed[data-id="${x.id}"]`).checked;let z=await withTimeout(sb.from("business_hours").update({open_time:o||null,close_time:c1||null,is_closed:cl}).eq("id",x.id),"Schedule save");if(z.error){setMsg(z.error.message,"error");return}}setMsg("Schedule saved.","ok")}}
+async function bookings(c){const r=await withTimeout(sb.from("bookings").select("id,booking_date,booking_time,status,customers(name,phone),services(name)").order("booking_date",{ascending:false}).order("booking_time",{ascending:false}).limit(200),"All bookings");if(r.error){setMsg(r.error.message,"error");return}c.innerHTML=`<section class="card"><h2>All bookings</h2><div class="table-wrap"><table class="table"><tr><th>Date</th><th>Time</th><th>Customer</th><th>Service</th><th>Status</th><th>Action</th></tr>${r.data.map(x=>`<tr><td>${x.booking_date}</td><td>${String(x.booking_time).slice(0,5)}</td><td>${esc(x.customers?.name)}<br>${esc(x.customers?.phone)}</td><td>${esc(x.services?.name)}</td><td>${x.status}</td><td><select class="bst" data-id="${x.id}"><option ${x.status==="confirmed"?"selected":""}>confirmed</option><option ${x.status==="completed"?"selected":""}>completed</option><option ${x.status==="cancelled"?"selected":""}>cancelled</option></select></td></tr>`).join("")}</table></div></section>`;document.querySelectorAll(".bst").forEach(x=>x.onchange=async()=>{let z=await withTimeout(sb.from("bookings").update({status:x.value}).eq("id",x.dataset.id),"Booking update");if(z.error)setMsg(z.error.message,"error")})}
+async function siteSettings(c){const r=await withTimeout(sb.from("site_settings").select("*").limit(1).single(),"Site settings");if(r.error){setMsg(r.error.message,"error");return}settings=r.data;c.innerHTML=`<section class="card"><h2>Site Settings</h2><form id="settings-form" class="form"><div class="two"><div class="field"><label>Brand name</label><input id="brand" value="${esc(settings.brand_name)}"></div><div class="field"><label>Slogan</label><input id="slogan" value="${esc(settings.slogan)}"></div></div><div class="two"><div class="field"><label>Primary color</label><input id="pc" type="color" value="${settings.primary_color||"#8b5e5a"}"></div><div class="field"><label>Secondary color</label><input id="sc" type="color" value="${settings.secondary_color||"#f8eee9"}"></div></div><div class="field"><label>Google font</label><select id="font"><option>Inter</option><option>DM Sans</option><option>Manrope</option><option>Playfair Display</option></select></div><div class="field"><label>Hero heading</label><input id="hh" value="${esc(settings.hero_heading)}"></div><div class="field"><label>Hero subtext</label><textarea id="hs">${esc(settings.hero_subtext)}</textarea></div><div class="field"><label>Book button label</label><input id="bl" value="${esc(settings.book_button_label)}"></div><div class="field"><label>Service layout</label><select id="layout"><option value="grid">Grid</option><option value="list">List</option></select></div><div class="field"><label>Booking title</label><input id="bt" value="${esc(settings.booking_cart_title)}"></div><div class="field"><label>Confirm button label</label><input id="cb" value="${esc(settings.confirm_button_label)}"></div><div class="field"><label>Logo URL</label><input id="logo" value="${esc(settings.logo_url||"")}"></div><div class="field"><label>Favicon URL</label><input id="fav" value="${esc(settings.favicon_url||"")}"></div><div class="field"><label>Custom CSS</label><textarea id="css" rows="8">${esc(settings.custom_css||"")}</textarea></div><div class="field"><label>Custom HTML/JS</label><textarea id="html" rows="8">${esc(settings.custom_html||"")}</textarea></div><button class="btn btn-primary">Publish Settings</button></form></section>`;font.value=settings.font_choice||"Inter";layout.value=settings.service_layout||"grid";document.getElementById("settings-form").onsubmit=async e=>{e.preventDefault();const obj={brand_name:brand.value,slogan:slogan.value,primary_color:pc.value,secondary_color:sc.value,font_choice:font.value,hero_heading:hh.value,hero_subtext:hs.value,book_button_label:bl.value,service_layout:layout.value,booking_cart_title:bt.value,confirm_button_label:cb.value,logo_url:logo.value||null,favicon_url:fav.value||null,custom_css:css.value,custom_html:html.value,updated_at:new Date().toISOString()};const z=await withTimeout(sb.from("site_settings").update(obj).eq("id",settings.id),"Settings save");if(z.error)setMsg(z.error.message,"error");else{setMsg("Published. Public pages apply changes on next load.","ok");settings={...settings,...obj};applySiteSettings(settings)}}}})();
+</script></body></html>

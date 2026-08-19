@@ -1,0 +1,101 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Customer Info</title><style>
+:root{--primary:#8b5e5a;--secondary:#f8eee9;--bg:#fffaf8;--text:#2c2524;--muted:#786e6a;--line:#eaded9}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;min-height:100vh;padding-bottom:82px}
+a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit}button{cursor:pointer}
+.container{width:min(1100px,calc(100% - 28px));margin:auto}.top{padding:18px 0}.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px}.brand img{width:38px;height:38px;object-fit:cover;border-radius:12px}.hero{margin:10px 0 24px;padding:30px 22px;border-radius:28px;background:linear-gradient(135deg,var(--secondary),#fff);box-shadow:0 12px 35px #5d40370f}.hero h1{font-size:clamp(30px,8vw,56px);line-height:1.02;margin:8px 0 12px}.hero p{color:var(--muted);max-width:650px}.glass{border:1px solid #ffffffaa;background:#ffffffaa;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 10px 30px #0000000d}.btn{border:0;border-radius:16px;padding:13px 18px;font-weight:600;transition:.2s}.btn-primary{background:var(--primary);color:#fff}.btn-light{background:#fff;color:var(--text);border:1px solid var(--line)}.btn:disabled{opacity:.5;cursor:not-allowed}.section-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:24px 0 12px}.section-head h2{font-size:21px;margin:0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:0 8px 24px #5d40370a}.service-card h3{margin:0 0 7px;font-size:16px}.muted{color:var(--muted);font-size:14px}.price{font-weight:700;margin:12px 0}.service-card .row{display:flex;justify-content:space-between;align-items:end;gap:8px}.list-view{grid-template-columns:1fr!important}.empty{text-align:center;padding:35px 15px;color:var(--muted)}.msg{padding:12px 14px;border-radius:14px;margin:12px 0;background:#fff1ee}.msg.error{color:#a52c24}.msg.ok{background:#eef9f1;color:#26703a}.form{display:grid;gap:13px}.field{display:grid;gap:7px}.field label{font-weight:600;font-size:14px}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:14px;padding:12px 13px;background:#fff;outline:none}.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 15%,transparent)}.dates{display:flex;gap:8px;overflow:auto;padding:3px 1px 10px}.date-btn{min-width:72px;border:1px solid var(--line);background:#fff;border-radius:16px;padding:10px 7px;text-align:center}.date-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.slot{border:1px solid var(--line);background:#fff;border-radius:12px;padding:11px 5px}.slot.active{background:var(--primary);color:#fff;border-color:var(--primary)}.slot.busy{background:#eee;color:#aaa;text-decoration:line-through;cursor:not-allowed}.summary{display:grid;gap:8px}.summary-row{display:flex;justify-content:space-between;gap:15px}.booking-item{display:grid;gap:8px}.status{display:inline-flex;padding:5px 9px;border-radius:99px;font-size:12px;background:#eee;justify-self:start}.status.confirmed{background:#e9f6ec;color:#24733b}.status.cancelled{background:#fcebea;color:#a32925}.status.completed{background:#eee9fb;color:#5d43a4}.bottom-nav{position:fixed;z-index:20;left:0;right:0;bottom:0;padding:9px max(10px,env(safe-area-inset-right)) max(9px,env(safe-area-inset-bottom));background:#ffffffdd;backdrop-filter:blur(18px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr)}.bottom-nav a{text-align:center;font-size:12px;color:var(--muted);padding:5px}.bottom-nav a.active{color:var(--primary);font-weight:700}.admin-layout{display:grid;gap:14px}.admin-tabs{display:flex;gap:7px;overflow:auto}.admin-tabs button{white-space:nowrap}.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse;background:#fff}.table th,.table td{padding:10px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;white-space:nowrap}.danger{background:#b33b35!important;color:#fff}.preview{width:100%;height:500px;border:1px solid var(--line);border-radius:16px;background:#fff}.two{display:grid;gap:10px}@media(min-width:700px){body{padding-bottom:20px}.bottom-nav{position:static;width:min(700px,calc(100% - 28px));margin:30px auto 0;border:1px solid var(--line);border-radius:20px}.grid{grid-template-columns:repeat(3,1fr)}.slots{grid-template-columns:repeat(5,1fr)}.two{grid-template-columns:1fr 1fr}.admin-layout{grid-template-columns:220px 1fr}.admin-tabs{display:grid;align-content:start}.admin-tabs button{text-align:left}}
+</style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "YOUR_SUPABASE_URL";
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const TIMEOUT_MS = 8000;
+
+async function withTimeout(promise, label="Request") {
+  let timer;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise((_, reject) => timer = setTimeout(() => reject(new Error(label + " timed out")), TIMEOUT_MS))
+    ]);
+  } finally { clearTimeout(timer); }
+}
+async function getUser() {
+  const { data, error } = await withTimeout(sb.auth.getUser(), "Session validation");
+  if (error) throw error;
+  return data.user;
+}
+async function loadSiteSettings() {
+  const { data, error } = await withTimeout(
+    sb.from("site_settings").select("*").limit(1).single(),
+    "Site settings"
+  );
+  if (error) throw error;
+  applySiteSettings(data);
+  return data;
+}
+function applySiteSettings(s) {
+  document.documentElement.style.setProperty("--primary", s.primary_color || "#8b5e5a");
+  document.documentElement.style.setProperty("--secondary", s.secondary_color || "#f8eee9");
+  const font = s.font_choice || "Inter";
+  const old = document.getElementById("site-font");
+  if (old) old.remove();
+  const link = document.createElement("link");
+  link.id = "site-font"; link.rel = "stylesheet";
+  link.href = "https://fonts.googleapis.com/css2?family=" + encodeURIComponent(font).replace(/%20/g, "+") + ":wght@400;500;600;700&display=swap";
+  document.head.appendChild(link);
+  document.body.style.fontFamily = "'" + font + "', system-ui, sans-serif";
+  document.querySelectorAll("[data-brand]").forEach(e => e.textContent = s.brand_name || "My Salon");
+  document.querySelectorAll("[data-slogan]").forEach(e => e.textContent = s.slogan || "");
+  document.querySelectorAll("[data-hero-heading]").forEach(e => e.textContent = s.hero_heading || "Book Your Appointment");
+  document.querySelectorAll("[data-hero-subtext]").forEach(e => e.textContent = s.hero_subtext || "");
+  document.querySelectorAll("[data-book-label]").forEach(e => e.textContent = s.book_button_label || "Book Now");
+  document.querySelectorAll("[data-cart-title]").forEach(e => e.textContent = s.booking_cart_title || "Your Booking");
+  document.querySelectorAll("[data-confirm-label]").forEach(e => e.textContent = s.confirm_button_label || "Confirm & Book");
+  document.querySelectorAll("[data-layout]").forEach(e => e.classList.toggle("list-view", s.service_layout === "list"));
+  if (s.logo_url) document.querySelectorAll("[data-logo]").forEach(e => { e.src = s.logo_url; e.hidden = false; });
+  if (s.favicon_url) {
+    let f = document.querySelector('link[rel="icon"]') || document.createElement("link");
+    f.rel = "icon"; f.href = s.favicon_url; document.head.appendChild(f);
+  }
+  if (s.custom_css) {
+    let st = document.getElementById("custom-site-css");
+    if (!st) { st = document.createElement("style"); st.id = "custom-site-css"; document.head.appendChild(st); }
+    st.textContent = s.custom_css;
+  }
+  if (s.custom_html) {
+    const holder = document.getElementById("custom-site-html");
+    if (holder) holder.innerHTML = s.custom_html;
+  }
+}
+function esc(v) {
+  return String(v ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+}
+function money(v) { return "৳" + Number(v).toLocaleString("en-BD"); }
+function setMsg(text, type="") {
+  const el = document.getElementById("msg");
+  if (el) { el.textContent = text; el.className = "msg " + type; el.hidden = !text; }
+}
+function saveBookingDraft(v) { sessionStorage.setItem("salon_booking_draft", JSON.stringify(v)); }
+function getBookingDraft() { try { return JSON.parse(sessionStorage.getItem("salon_booking_draft") || "null"); } catch { return null; } }
+function clearBookingDraft() { sessionStorage.removeItem("salon_booking_draft"); }
+function go(path) { location.href = path; }
+</script></head><body><main class="container"><header class="top"><a class="brand" href="booking.html">← <span data-cart-title>Your Booking</span></a></header><section id="summary" class="card"></section><form id="form" class="form" style="margin-top:15px"><div class="field"><label>Phone number</label><input id="phone" inputmode="tel" autocomplete="tel" placeholder="01XXXXXXXXX" required></div><div id="name-wrap" class="field" hidden><label>Your name</label><input id="name" autocomplete="name" placeholder="Your name"></div><button class="btn btn-primary" type="submit" data-confirm-label>Confirm & Book</button></form><div id="msg" class="msg" hidden></div></main><nav class="bottom-nav">
+<a href="index.html">⌂<br>Home</a>
+<a href="services.html">✦<br>Services</a>
+<a href="my-bookings.html">▣<br>My Bookings</a>
+<a href="customer-info.html">◉<br>Profile</a>
+</nav><div id="custom-site-html"></div><script>
+(async()=>{try{await loadSiteSettings();}catch(e){console.warn(e);} const draft=getBookingDraft(); if(!draft){setMsg("Booking selection expired. Please choose a service again.","error");document.getElementById("form").hidden=true;} else document.getElementById("summary").innerHTML=`<div class="summary"><b>${esc(draft.serviceName)}</b><span>${esc(draft.date)} · ${esc(draft.time)}</span><strong>${money(draft.price)}</strong></div>`;
+let existing=null;
+document.getElementById("phone").addEventListener("blur",async()=>{const phone=document.getElementById("phone").value.trim();if(!phone)return;const r=await withTimeout(sb.from("customers").select("id,name,phone").eq("phone",phone).maybeSingle(),"Customer lookup");if(r.error){setMsg(r.error.message,"error");return}existing=r.data;document.getElementById("name-wrap").hidden=!!existing;if(existing)setMsg(`Welcome back, ${existing.name}. You can confirm your booking.`,"ok");else setMsg("New customer — enter your name.","");});
+document.getElementById("form").onsubmit=async e=>{e.preventDefault();const phone=document.getElementById("phone").value.trim();const name=document.getElementById("name").value.trim();if(!phone){setMsg("Phone is required.","error");return}if(!existing&&!name){setMsg("Name is required for a new customer.","error");return}
+ try{
+  let customerId=existing?.id;
+  if(!customerId){const r=await withTimeout(sb.from("customers").insert({name,phone}).select("id").single(),"Customer creation");if(r.error)throw r.error;customerId=r.data.id;}
+  const check=await withTimeout(sb.from("bookings").select("id,booking_time").eq("booking_date",draft.date).eq("status","confirmed"),"Availability check");if(check.error)throw check.error;
+  const taken=check.data.some(x=>{const a=draft.timeMinutes,b=(()=>{const [h,m]=String(x.booking_time).slice(0,5).split(":").map(Number);return h*60+m})();return a<b+draft.duration&&a+draft.duration>b});if(taken)throw new Error("That slot was just booked. Please choose another time.");
+  const r=await withTimeout(sb.from("bookings").insert({customer_id:customerId,service_id:draft.serviceId,booking_date:draft.date,booking_time:`${String(Math.floor(draft.timeMinutes/60)).padStart(2,"0")}:${String(draft.timeMinutes%60).padStart(2,"0")}:00`,status:"confirmed"}).select("id").single(),"Booking creation");if(r.error)throw r.error;
+  sessionStorage.setItem("last_booking",JSON.stringify({...draft,bookingId:r.data.id,customerId}));clearBookingDraft();go("confirmation.html");
+ }catch(err){setMsg(err.message||"Could not confirm booking.","error")}
+};})();
+</script></body></html>
